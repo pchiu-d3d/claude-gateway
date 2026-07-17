@@ -1,0 +1,57 @@
+# Claude Apps Gateway - Configuration Template
+# Fill in @@PLACEHOLDERS@@ before building the image.
+# ${VARS} are resolved at container boot time from environment variables.
+
+listen:
+  host: 0.0.0.0
+  port: 8080
+  public_url: https://@@GATEWAY_HOSTNAME@@   # Internal ALB DNS name (must resolve to private IP)
+
+oidc:
+  issuer: https://login.microsoftonline.com/@@ENTRA_TENANT_ID@@/v2.0
+  client_id: @@ENTRA_CLIENT_ID@@
+  client_secret: ${OIDC_CLIENT_SECRET}       # Injected from Secrets Manager
+  allowed_email_domains: [@@EMAIL_DOMAIN@@]
+  # Entra groups are GUIDs. To use App Roles (human-readable names) instead:
+  # groups_claim: roles
+
+session:
+  jwt_secret: ${GATEWAY_JWT_SECRET}          # Generate: openssl rand -base64 32
+  ttl_hours: 1
+
+store:
+  postgres_url: postgres://${DB_HOST}:5432/claude_gateway?sslmode=require
+  username: ${DB_USER}
+  password: ${DB_PASSWORD}
+
+upstreams:
+  - provider: bedrock
+    region: @@BEDROCK_REGION@@               # e.g. us-east-1
+    auth: {}                                 # Uses ECS task role (no static keys)
+
+auto_include_builtin_models: false
+models:
+  - id: claude-opus-4-8
+    label: Claude Opus 4.8
+    upstream_model: { bedrock: global.anthropic.claude-opus-4-8 }
+  - id: claude-sonnet-5
+    label: Claude Sonnet 5
+    upstream_model: { bedrock: global.anthropic.claude-sonnet-5 }
+  - id: claude-haiku-4-5
+    label: Claude Haiku 4.5
+    upstream_model: { bedrock: global.anthropic.claude-haiku-4-5-20251001-v1:0 }
+
+managed:
+  policies:
+    - match: {}
+      cli:
+        model: claude-sonnet-5
+        availableModels: [claude-opus-4-8, claude-sonnet-5, claude-haiku-4-5]
+        enforceAvailableModels: true
+
+admin:
+  write_keys:
+    - { id: admin, key: "${GATEWAY_ADMIN_WRITE_KEY}" }
+  read_keys:
+    - { id: report, key: "${GATEWAY_ADMIN_READ_KEY}" }
+  blocked_message: "Spend limit reached. Contact your platform team to request a higher limit."

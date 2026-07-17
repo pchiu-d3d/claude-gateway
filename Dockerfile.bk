@@ -1,0 +1,17 @@
+FROM ubuntu:24.04 
+
+RUN apt-get update && apt-get install -y curl
+
+RUN useradd -m -u 1001 -d /app claudeuser 
+
+USER claudeuser
+WORKDIR /app
+
+RUN curl -fsSL https://claude.ai/install.sh | bash
+
+# RUN sudo ln -s /app/.claude/bin/claude /usr/local/bin/claude
+
+
+# Default command starts the interactive session
+#CMD ["claude"]
+
