@@ -1,0 +1,15 @@
+apiVersion: barmancloud.cnpg.io/v1
+kind: ObjectStore
+metadata:
+  name: la4-store
+spec:
+  configuration:
+      destinationPath: s3://cnpg-backup-devops
+      endpointURL: http://devops.s3.d3d.io:80
+      s3Credentials:
+        accessKeyId:
+          name: backup-secrets
+          key: AWS_ACCESS_KEY_ID
+        secretAccessKey:
+          name: backup-secrets
+          key: AWS_SECRET_ACCESS_KEY
