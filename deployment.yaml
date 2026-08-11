@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: claude-gateway
+  labels:
+    app: claude-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: claude-gateway
+  template:
+    metadata:
+      labels:
+        app: claude-gateway
+    spec:
+      containers:
+        - name: claude-gateway
+          image: docker.artifactory.d3d.io/claude-gateway:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - secretRef:
+                name: claude-gateway-secrets 
+          volumeMounts: 
+            - name: gateway-config
+              mountPath: /etc/claude/gateway.yaml
+              subPath: config
+      imagePullSecrets:
+        - name: regcred
+      volumes:
+        - name: gateway-config
+          configMap:
+            name: gateway-configmap
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: claude-gateway
+  labels: 
+    app: claude-gateway
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 8080  
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: claude-gateway 

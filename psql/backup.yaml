@@ -1,0 +1,13 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: claude-gateway-la4-backup
+  namespace: claude-gateway
+spec:
+  cluster:
+    name: claude-gateway-la4
+  schedule: '0 0 0 * * *'
+  backupOwnerReference: self
+  method: plugin
+  pluginConfiguration:
+    name: barman-cloud.cloudnative-pg.io

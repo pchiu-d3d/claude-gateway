@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-configmap
+  namespace: claude-gateway
+data:
+ config: | 
+  listen:
+    host: 0.0.0.0
+    port: 8080
+    public_url: https://bedrock.ai.d3d.io   # Internal ALB DNS name (must resolve to private IP)
+  oidc:
+    issuer: https://login.microsoftonline.us/ad852420-b06d-428c-9fbb-01e6d52a5b74/v2.0
+    client_id: ae2be1f0-8000-40bc-ba76-ece1a7e93604
+    client_secret: ${OIDC_CLIENT_SECRET}
+    allowed_email_domains: [ divergent.us ]
+    userinfo_fallback: true
+  session:
+    jwt_secret: ${GATEWAY_JWT_SECRET}
+  store:
+    postgres_url: postgres://claude-gateway.pg.d3d.io:5432/claude_gateway?sslmode=require
+    username: ${CLAUDE_PG_USER}
+    password: ${CLAUDE_PG_PASSWORD}
+  upstreams:
+    - provider: bedrock
+      region: us-gov-west-1           
+      auth: 
+        aws_access_key_id: ${AWS_ACCESS_KEY_ID} 
+        aws_secret_access_key: ${AWS_SECRET_ACCESS_KEY}  
+  models:
+    - id: claude-sonnet-4-5
+      label: Claude Sonnet 4.5
+      upstream_model: 
+        bedrock: us-gov.anthropic.claude-sonnet-4-5-20250929-v1:0
+        
+  managed:
+    policies:  
+      - match: {}
+        cli:
+          model: claude-sonnet-4-5
+          availableModels: [claude-sonnet-4-5]
+          enforceAvailableModels: true      
+  admin:
+    write_keys:
+      - { id: admin, key: "${GATEWAY_ADMIN_WRITE_KEY}" }
+    read_keys:
+      - { id: report, key: "${GATEWAY_ADMIN_READ_KEY}" }
+    blocked_message: "Spend limit reached. Contact your platform team to request a higher limit."
+    

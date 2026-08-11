@@ -1,22 +1,16 @@
-# Claude Apps Gateway - Configuration Template
-# Fill in @@PLACEHOLDERS@@ before building the image.
-# ${VARS} are resolved at container boot time from environment variables.
-
 listen:
   host: 0.0.0.0
   port: 8080
-  public_url: https://@@GATEWAY_HOSTNAME@@   # Internal ALB DNS name (must resolve to private IP)
-
+  public_url: https://@@GATEWAY_HOSTNAME@@  
 oidc:
   issuer: https://login.microsoftonline.com/@@ENTRA_TENANT_ID@@/v2.0
   client_id: @@ENTRA_CLIENT_ID@@
-  client_secret: ${OIDC_CLIENT_SECRET}       # Injected from Secrets Manager
+  client_secret: ${OIDC_CLIENT_SECRET}     
   allowed_email_domains: [@@EMAIL_DOMAIN@@]
-  # Entra groups are GUIDs. To use App Roles (human-readable names) instead:
-  # groups_claim: roles
+
 
 session:
-  jwt_secret: ${GATEWAY_JWT_SECRET}          # Generate: openssl rand -base64 32
+  jwt_secret: ${GATEWAY_JWT_SECRET}        
   ttl_hours: 1
 
 store:
@@ -26,8 +20,8 @@ store:
 
 upstreams:
   - provider: bedrock
-    region: @@BEDROCK_REGION@@               # e.g. us-east-1
-    auth: {}                                 # Uses ECS task role (no static keys)
+    region: @@BEDROCK_REGION@@         
+    auth: {}                            
 
 auto_include_builtin_models: false
 models:

@@ -1,19 +1,19 @@
 apiVersion: barmancloud.cnpg.io/v1
 kind: ObjectStore
 metadata:
-  name: f2-store
+  name: la4-store
   namespace: claude-gateway
 spec:
   configuration:
       destinationPath: s3://cnpg-backup-devops/
-      endpointURL: http://10.5.8.114:80
+      endpointURL: http://10.18.2.94:80
       s3Credentials:
         accessKeyId:
           name: objectstore-secrets
-          key: F2_OBJECTSTORE_ID
+          key: LA4_OBJECTSTORE_ID
         secretAccessKey:
           name: objectstore-secrets
-          key: F2_OBJECTSTORE_KEY
-      wal:
-        compression: snappy 
+          key: LA4_OBJECTSTORE_KEY
+      wal:        
+        compression: snappy
   retentionPolicy: "30d"

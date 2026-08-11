@@ -1,0 +1,45 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: claude-gateway-la4
+  namespace: claude-gateway
+spec:
+  instances: 3
+  primaryUpdateStrategy: unsupervised
+
+  bootstrap:
+    initdb:
+      database: claude_gateway
+      owner: claude
+      secret:
+        name: claude-db-secret
+
+  storage:
+    size: 100Gi
+    storageClass: netapp-nfs-devops
+
+
+  plugins:
+  - name: barman-cloud.cloudnative-pg.io
+    isWALArchiver: true
+    parameters:
+      barmanObjectName: la4-store
+
+  
+  replica:
+    self: claude-gateway-la4
+    primary: claude-gateway-la4
+    source: claude-gateway-f2
+
+  externalClusters:
+    - name: claude-gateway-la4
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: la4-store
+
+    - name: claude-gateway-f2
+      plugin:
+        name: barman-cloud.cloudnative-pg.io
+        parameters:
+          barmanObjectName: f2-store
